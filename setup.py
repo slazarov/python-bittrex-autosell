@@ -1,10 +1,14 @@
 # !/usr/bin/python
 from setuptools import setup, find_packages
 
+install_requires = \
+    ['python-bittrex']
+
 setup(
     name='python-bittrex-autosell',
     version='0.0.1',
-    packages=['python-bittrex'],
+    packages=find_packages(exclude=['tests*']),
+    install_requires=install_requires,
     url='https://github.com/slazarov/python-bittrex-autosell',
     license='MIT',
     author='slazarov',
