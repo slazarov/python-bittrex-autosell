@@ -32,7 +32,7 @@ usage: autosell.py [-h] [-c] [-p] [-t] [-f] [-l]
 
 optional arguments:
   -h, --help     show this help message and exit
-  -c , --coins   Specify three coins, separated by commas.
+  -c , --coins   Specify three coins, separated by commas with no space in between.
   -p , --price   Specify price difference in percentage relative to top order
                  in the order book (default: 0)
   -t , --time    Sleep interval in seconds between re-running the script
@@ -44,5 +44,5 @@ optional arguments:
 
  ### Example usage:
  ```
-(venv) slazarov$ python autosell.py -coins  ZEN, BTC, SALT -price 0.02 -time 5400 -log
+(venv) slazarov$ python autosell.py -coins  ZEN,BTC,SALT -price 0.02 -time 5400 -log
  ```
