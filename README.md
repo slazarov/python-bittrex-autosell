@@ -14,7 +14,7 @@ The script does the following procedure (with example):
 
 2.) Tries to place orders for ZEN >> BTC or BTC >> GNT.
 
-3.) Sleeps for sleep_interval = x.
+3.) Sleeps for x seconds.
 
 4.) Repeat.
 
@@ -23,7 +23,10 @@ The script does the following procedure (with example):
 
 `{"api_key": "your_api_key", "api_secret": "your_api_secret"}`
 
+
 Make sure you have given the correct permission to your api!
+
+**The script doesn't store your api keys anywhere, but be prudent and check the source code.**
 
 2.) Study the parameters
 ```
