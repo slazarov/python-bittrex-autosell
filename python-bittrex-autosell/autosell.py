@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# auto_sell.py
+# autosell.py
 from __future__ import print_function
 import bittrex
 import argparse
