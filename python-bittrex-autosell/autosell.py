@@ -52,7 +52,7 @@ def create_client():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--coins', help='Specify three coins, separated by commas. '
+    parser.add_argument('-c', '--coins', help='Specify three coins, separated by commas with no space in between. '
                                               'First coin -> trade for Second -> trade for Third', type=str, metavar='')
     parser.add_argument('-p', '--price', metavar='',
                         help='Specify price difference in percentage relative '
