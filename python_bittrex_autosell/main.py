@@ -9,6 +9,10 @@ from json import load
 from time import sleep
 from sys import exit
 from python_bittrex_autosell.constants import *
+import logging
+from python_bittrex_autosell._logger import add_stream_logger
+
+logger = logging.getLogger(__name__)
 
 """
 Readme:
@@ -58,6 +62,8 @@ def main():
         exit(0)
 
     bittrex_client = create_client(args.api)
+    add_stream_logger()
+    logger.info('hi')
     exit(0)
 
     # Cancel previous orders
@@ -145,6 +151,8 @@ def main():
                     log.write('{} \n'.format(msg))
         print(msg)
         sleep(args.time)
+
+
 
 
 if __name__ == '__main__':
