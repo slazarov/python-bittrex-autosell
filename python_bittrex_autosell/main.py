@@ -81,16 +81,18 @@ def cancel_existing_orders():
 def get_and_sort_balances(coins):
     logger.info(INFO_GETTING_BALANCES)
     sleep(5)
-    balance = bittrex_client.get_balances()
-    balances = {}
+    while True:
+        balance = bittrex_client.get_balances()
+        balances = {}
 
-    while len(balances) < len(coins):
-        for item in balance['result']:
-            for coin in coins:
-                if item['Currency'] == coin:
-                    balances[coin] = item
+        while len(balances) < len(coins):
+            for item in balance['result']:
+                if item is None:
                     break
-    return balances
+                for coin in coins:
+                    if item['Currency'] == coin:
+                        balances[coin] = item
+                        return balances
 
 
 def print_order_status(trade):
