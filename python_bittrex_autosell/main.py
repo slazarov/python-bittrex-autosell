@@ -92,7 +92,8 @@ def get_and_sort_balances(coins):
                 for coin in coins:
                     if item['Currency'] == coin:
                         balances[coin] = item
-                        return balances
+                        break
+            return balances
 
 
 def print_order_status(trade):
