@@ -8,7 +8,7 @@ import argparse
 from json import load
 from time import sleep
 from sys import exit
-from python_bittrex_autosell.constants import *
+from ._constants import *
 import logging
 from ._logger import add_stream_logger
 
@@ -151,8 +151,6 @@ def main():
                     log.write('{} \n'.format(msg))
         print(msg)
         sleep(args.time)
-
-
 
 
 if __name__ == '__main__':

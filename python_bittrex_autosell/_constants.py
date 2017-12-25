@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# constants.py
+# _constants.py
 
 # =============
 # Help messages
