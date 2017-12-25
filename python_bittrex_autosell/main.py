@@ -23,11 +23,11 @@ except ImportError:
 try:
     from ._logger import *
 
-    logger = logging.getLogger(__name__)
+    #logger = logging.getLogger(__name__)
 except ImportError:
     from python_bittrex_autosell._logger import *
 
-    logger = add_stream_logger_debug()
+    #logger = add_stream_logger_debug()
 
 
 def open_credentials(credentials_file):
@@ -59,6 +59,11 @@ def main():
     parser.add_argument('-a', '--api', help=MSG_API, default='credentials.json', type=str, metavar='')
     args = parser.parse_args()
 
+
+    logger=add_stream_logger2(__name__)
+    # if args.log is not False:
+    #     logger = add_file_handler(logger_name, args.log)
+
     if args.coins is not None:
         coins = str.split(args.coins, ',')
         if len(coins) != 3:
@@ -71,14 +76,13 @@ def main():
         print(ERROR_COIN_FORMAT)
         exit(0)
 
+    exit(0)
     bittrex_client = create_client(args.api)
     add_stream_logger()
 
     # Cancel previous orders
     while True:
         msg = INFO_GETTING_ORDERS
-        if args.log is True:
-            msgs = [msg]
         logger.info(msg)
         open_orders = []
         for _ in range(5):
@@ -95,14 +99,10 @@ def main():
                 logger.info(msg)
                 msg_order_cancel = INFO_ORDER_CANCEL_STATUS.format(order_id, cancel['success'])
                 logger.info(msg_order_cancel)
-                if args.log is True:
-                    msgs.append(msg)
-                    msgs.append(msg_order_cancel)
+
         else:
             msg = INFO_ORDERS_NONE
             logger.info(msg)
-            if args.log is True:
-                msgs.append(msg)
 
         sleep(5)
         balance = bittrex_client.get_balances()
@@ -128,8 +128,6 @@ def main():
             price = orderbook[0]['Rate'] * (1 + args.price)
             trade = bittrex_client.sell_limit(ticker, qty, price)
             msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
-            if args.log is True:
-                msgs.append(msg)
             logger.info(msg)
 
         if coin_2['Currency'] == 'USDT':
@@ -140,8 +138,6 @@ def main():
                 price = orderbook[0]['Rate'] * (1 + args.price)
                 trade = bittrex_client.sell_limit(ticker, qty, price)
                 msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
-                if args.log is True:
-                    msgs.append(msg)
                 logger.info(msg)
         else:
             if coin_1['Balance'] > 0 and coin_1['Pending'] == 0:
@@ -151,17 +147,9 @@ def main():
                 qty = round((coin_1['Balance'] / price) * (1 - args.fee), 8)
                 trade = bittrex_client.buy_limit(ticker, qty, price)
                 msg = INFO_PLACED_BUY_ORDER.format(ticker, qty, price)
-                if args.log is True:
-                    msgs.append(msg)
                 logger.info(msg)
 
         msg = INFO_SLEEP.format(args.time / 3600)
-        if args.log is True:
-            msgs.append(msg)
-        if args.log is True:
-            with open(args.log, 'a') as log:
-                for msg in msgs:
-                    log.write('{} \n'.format(msg))
         logger.info(msg)
         sleep(args.time)
 
