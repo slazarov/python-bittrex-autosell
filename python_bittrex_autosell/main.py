@@ -19,7 +19,6 @@ try:
     from ._constants import *
 except ImportError:
     from python_bittrex_autosell._constants import *
-
 try:
     from ._logger import *
 except ImportError:
@@ -44,6 +43,65 @@ def create_client(api_keys):
     return c
 
 
+def get_coins(coin_list):
+    if coin_list is not None:
+        coins = str.split(coin_list, ',')
+        if len(coins) != 3:
+            print(ERROR_COIN_NUMBER)
+            exit(0)
+        else:
+            for i in range(len(coins)):
+                coins[i] = str.upper(coins[i])
+            return coins
+    else:
+        print(ERROR_COIN_FORMAT)
+        exit(0)
+
+
+def cancel_existing_orders():
+    logger.info(INFO_GETTING_ORDERS)
+    open_orders = []
+    for _ in range(5):
+        open_orders = bittrex_client.get_open_orders()['result']
+        if not open_orders or open_orders is None:
+            sleep(1)
+        else:
+            break
+    if open_orders is not None and open_orders:
+        for order in open_orders:
+            order_id = order['OrderUuid']
+            cancel = bittrex_client.cancel(order_id)
+            logger.info(
+                INFO_CANCELLING_ORDERS.format(order['Exchange'], order['Quantity'], order['Limit'], order_id))
+            logger.info(INFO_ORDER_CANCEL_STATUS.format(order_id, cancel['success']))
+    else:
+        logger.info(INFO_ORDERS_NONE)
+
+
+def get_and_sort_balances(coins):
+    logger.info(INFO_GETTING_BALANCES)
+    sleep(5)
+    balance = bittrex_client.get_balances()
+    balances = {}
+
+    while len(balances) < len(coins):
+        for item in balance['result']:
+            for coin in coins:
+                if item['Currency'] == coin:
+                    balances[coin] = item
+                    break
+    return balances
+
+
+def print_order_status(trade):
+    status = trade['success']
+    if status is True:
+        order_id = trade['result']['uuid']
+    else:
+        order_id = None
+    logger.info(INFO_PLACED_ORDER_STATUS.format(order_id, status))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--coins', help=MSG_COINS, type=str, metavar='')
@@ -55,61 +113,14 @@ def main():
     parser.add_argument('-a', '--api', help=MSG_API, default='credentials.json', type=str, metavar='')
     args = parser.parse_args()
 
-    logger = add_stream_logger()
-    logger.info(2)
-    # if args.log is not False:
-    #     logger = add_file_handler(logger_name, args.log)
-
-    if args.coins is not None:
-        coins = str.split(args.coins, ',')
-        if len(coins) != 3:
-            print(ERROR_COIN_NUMBER)
-            exit(0)
-        else:
-            for i in range(len(coins)):
-                coins[i] = str.upper(coins[i])
-    else:
-        print(ERROR_COIN_FORMAT)
-        exit(0)
-
-    exit(0)
+    coins = get_coins(args.coins)
+    global logger, bittrex_client
+    logger = add_stream_logger(file_name=args.log)
     bittrex_client = create_client(args.api)
 
-    # Cancel previous orders
     while True:
-        msg = INFO_GETTING_ORDERS
-        logger.info(msg)
-        open_orders = []
-        for _ in range(5):
-            open_orders = bittrex_client.get_open_orders()['result']
-            if not open_orders or open_orders is None:
-                sleep(1)
-            else:
-                break
-        if open_orders is not None and open_orders:
-            for order in open_orders:
-                order_id = order['OrderUuid']
-                cancel = bittrex_client.cancel(order_id)
-                msg = INFO_CANCELLING_ORDERS.format(order['Exchange'], order['Quantity'], order['Limit'], order_id)
-                logger.info(msg)
-                msg_order_cancel = INFO_ORDER_CANCEL_STATUS.format(order_id, cancel['success'])
-                logger.info(msg_order_cancel)
-
-        else:
-            msg = INFO_ORDERS_NONE
-            logger.info(msg)
-
-        sleep(5)
-        balance = bittrex_client.get_balances()
-        balances = {}
-
-        while len(balances) < len(coins):
-            for item in balance['result']:
-                for coin in coins:
-                    if item['Currency'] == coin:
-                        balances[coin] = item
-                        break
-
+        cancel_existing_orders()
+        balances = get_and_sort_balances(coins)
         coin_0 = balances[coins[0]]
         coin_1 = balances[coins[1]]
         coin_2 = balances[coins[2]]
@@ -119,11 +130,10 @@ def main():
             ticker = coins[1] + '-' + coins[0]
             qty = coin_0['Balance']
             orderbook = bittrex_client.get_orderbook(ticker, bittrex.SELL_ORDERBOOK)['result']
-            # Don't sell @ market price, set a price at 3% higher and hope it will move into your favour
             price = orderbook[0]['Rate'] * (1 + args.price)
             trade = bittrex_client.sell_limit(ticker, qty, price)
-            msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
-            logger.info(msg)
+            print_order_status(trade)
+            logger.info(INFO_PLACED_SELL_ORDER.format(ticker, qty, price))
 
         if coin_2['Currency'] == 'USDT':
             if coin_1['Balance'] > 0 and coin_1['Pending'] == 0:
@@ -132,8 +142,8 @@ def main():
                 orderbook = bittrex_client.get_orderbook(ticker, bittrex.SELL_ORDERBOOK)['result']
                 price = orderbook[0]['Rate'] * (1 + args.price)
                 trade = bittrex_client.sell_limit(ticker, qty, price)
-                msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
-                logger.info(msg)
+                print_order_status(trade)
+                logger.info(INFO_PLACED_SELL_ORDER.format(ticker, qty, price))
         else:
             if coin_1['Balance'] > 0 and coin_1['Pending'] == 0:
                 ticker = coins[1] + '-' + coins[2]
@@ -141,11 +151,10 @@ def main():
                 price = orderbook[0]['Rate'] * (1 - args.price)
                 qty = round((coin_1['Balance'] / price) * (1 - args.fee), 8)
                 trade = bittrex_client.buy_limit(ticker, qty, price)
-                msg = INFO_PLACED_BUY_ORDER.format(ticker, qty, price)
-                logger.info(msg)
+                print_order_status(trade)
+                logger.info(INFO_PLACED_BUY_ORDER.format(ticker, qty, price))
 
-        msg = INFO_SLEEP.format(args.time / 3600)
-        logger.info(msg)
+        logger.info(INFO_SLEEP.format(args.time / 3600))
         sleep(args.time)
 
 

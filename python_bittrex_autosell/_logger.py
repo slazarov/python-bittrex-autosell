@@ -10,36 +10,14 @@ except ImportError:
 logging.getLogger(__package__).addHandler(NullHandler())
 
 
-def add_stream_logger(level=logging.DEBUG, file_name=None):
-    # if __name__ == '__main__':
-    #     log_name = 'pba'
-    # else:
-    #     log_name = __package__
+def add_stream_logger(level=logging.DEBUG, file_name=False):
     logger = logging.getLogger(__package__)
-    #logger = logging.getLogger(log_name)
     logger.setLevel(level)
-    if file_name is not None:
+    if file_name is not False:
         logger.addHandler(_get_file_handler(file_name))
     logger.addHandler(_get_stream_handler())
     if __name__ != '__main__':
         return logger
-
-
-# def add_stream_logger(level=logging.DEBUG, file_name=None):
-#     logger = logging.getLogger(__package__)
-#     logger.setLevel(level)
-#     if file_name is not None:
-#         logger.addHandler(_get_file_handler(file_name))
-#     logger.addHandler(_get_stream_handler())
-#
-#
-# def add_stream_logger_debug(level=logging.DEBUG, file_name=None):
-#     logger = logging.getLogger('pba')
-#     logger.setLevel(level)
-#     if file_name is not None:
-#         logger.addHandler(_get_file_handler(file_name))
-#     logger.addHandler(_get_stream_handler())
-#     return logger
 
 
 def add_file_handler(logger_name, file_name=None):
