@@ -50,5 +50,5 @@ optional arguments:
 
  ### Example usage:
  ```
-(venv) pba --coins ZEN,BTC,SALT --price 0.02 --time 5400 --log
+$ pba --coins ZEN,BTC,SALT --price 0.02 --time 5400 --log
  ```

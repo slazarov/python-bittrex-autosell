@@ -11,7 +11,6 @@ setup(
     entry_points={
         "console_scripts": ['pba = python_bittrex_autosell.main:main']
     },
-    # packages=find_packages(exclude=['tests*']),
     install_requires=install_requires,
     url='https://github.com/slazarov/python_bittrex_autosell',
     license='MIT',
