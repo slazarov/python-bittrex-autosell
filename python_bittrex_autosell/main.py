@@ -31,7 +31,7 @@ def open_credentials(credentials_file):
             credentials = load(file)
         return credentials
     except FileNotFoundError:
-        print(CREDENTIALS_FILE_NOT_FOUND)
+        logger.error(CREDENTIALS_FILE_NOT_FOUND)
         exit(0)
 
 
@@ -47,14 +47,14 @@ def get_coins(coin_list):
     if coin_list is not None:
         coins = str.split(coin_list, ',')
         if len(coins) != 3:
-            print(ERROR_COIN_NUMBER)
+            logger.error(ERROR_COIN_NUMBER)
             exit(0)
         else:
             for i in range(len(coins)):
                 coins[i] = str.upper(coins[i])
             return coins
     else:
-        print(ERROR_COIN_FORMAT)
+        logger.error(ERROR_COIN_FORMAT)
         exit(0)
 
 
@@ -135,8 +135,8 @@ def main():
             orderbook = bittrex_client.get_orderbook(ticker, bittrex.SELL_ORDERBOOK)['result']
             price = orderbook[0]['Rate'] * (1 + args.price)
             trade = bittrex_client.sell_limit(ticker, qty, price)
-            print_order_status(trade)
             logger.info(INFO_PLACED_SELL_ORDER.format(ticker, qty, price))
+            print_order_status(trade)
 
         if coin_2['Currency'] == 'USDT':
             if coin_1['Balance'] > 0 and coin_1['Pending'] == 0:
@@ -145,8 +145,8 @@ def main():
                 orderbook = bittrex_client.get_orderbook(ticker, bittrex.SELL_ORDERBOOK)['result']
                 price = orderbook[0]['Rate'] * (1 + args.price)
                 trade = bittrex_client.sell_limit(ticker, qty, price)
-                print_order_status(trade)
                 logger.info(INFO_PLACED_SELL_ORDER.format(ticker, qty, price))
+                print_order_status(trade)
         else:
             if coin_1['Balance'] > 0 and coin_1['Pending'] == 0:
                 ticker = coins[1] + '-' + coins[2]
@@ -154,8 +154,8 @@ def main():
                 price = orderbook[0]['Rate'] * (1 - args.price)
                 qty = round((coin_1['Balance'] / price) * (1 - args.fee), 8)
                 trade = bittrex_client.buy_limit(ticker, qty, price)
-                print_order_status(trade)
                 logger.info(INFO_PLACED_BUY_ORDER.format(ticker, qty, price))
+                print_order_status(trade)
 
         logger.info(INFO_SLEEP.format(args.time / 3600))
         sleep(args.time)

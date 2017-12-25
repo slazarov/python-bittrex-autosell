@@ -21,11 +21,11 @@ MSG_TIME = 'Sleep interval in seconds between re-running the script (default: 36
 MSG_FEE = 'Bittrex trade fee, don\'t touch unless Bittrex has changed it ' \
           'and it is not reflected in the script (default: 0.0025)'
 
-MSG_LOG = '[Optional] Append logs to the file named by \'path\'. If ' \
-          '\'path\' is not given, append to \'autosell.log\' in current working folder.'
+MSG_LOG = 'Append logs to the file named by \'path\'. If \'path\' is not given, ' \
+          'append to \'autosell.log\' in current working folder.'
 
-MSG_API = '[Optional] filepath to credentials file, e.g /Users/username/Documents/credentials.json ' \
-          '(default: looks for credentials.json within the same folder where the script is executed'
+MSG_API = 'Read api keys from json filed named by \'path\'. If \'path\' ' \
+          'is not given, read from \'credentials.json\' in current working folder.'
 
 # ==============
 # Error messages
@@ -39,11 +39,11 @@ ERROR_COIN_FORMAT = 'You did not specify the coins correctly. E.g --coins ZEN,BT
 # Info messages
 # =============
 
-INFO_GETTING_BALANCES= 'Getting and sorting balances.'
+INFO_GETTING_BALANCES = 'Getting and sorting balances.'
 INFO_GETTING_ORDERS = 'Getting open orders.'
 INFO_CANCELLING_ORDERS = 'Canceling order for {} for {}@{} with ID: {}.'
 INFO_ORDER_CANCEL_STATUS = 'Order {} cancellation success status: {}.'
-INFO_ORDERS_NONE='No open orders found.'
+INFO_ORDERS_NONE = 'No open orders found.'
 INFO_PLACED_SELL_ORDER = 'Sell order for {} for {}@{}.'
 INFO_PLACED_BUY_ORDER = 'Buy order for {} for {}@{}.'
 INFO_PLACED_ORDER_STATUS = 'Order {} placement success status: {}.'
