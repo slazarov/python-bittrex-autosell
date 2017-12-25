@@ -7,11 +7,11 @@ install_requires = \
 setup(
     name='python_bittrex_autosell',
     version='0.0.1',
+    packages=['pba'],
     entry_points={
-        "console_scripts": ['pba = pba.main:main']
+        "console_scripts": ['pba = python_bittrex_autosell.main:main']
     },
     # packages=find_packages(exclude=['tests*']),
-    packages=['pba'],
     install_requires=install_requires,
     url='https://github.com/slazarov/python_bittrex_autosell',
     license='MIT',
