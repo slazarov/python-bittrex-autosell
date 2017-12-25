@@ -8,42 +8,26 @@ import argparse
 from json import load
 from time import sleep
 from sys import exit
+from python_bittrex_autosell.constants import *
 
 """
-Description:
-Auto sell script for bittrex. It is used in the cases when you want 
-to auto sell a specific coin for another, but there is no direct market,
-so you have to use an intermediate market.
-
-For example, you are currently mining ZEN but want to convert it to GNT.
-Since there is no direct market for ZEN/GNT, you have to purchase BTC with ZEN and then purchase GNT with BTC.
-ZEN >> BTC >> GNT
-
-The script does the following procedure (with example):
-1.) Cancels all existing orders.
-2.) Tries to place orders for ZEN >> BTC or BTC >> GNT.
-3.) Sleeps for sleep_interval = x.
-4.) Repeat.
-
-How to use it:
-1.) Put a credentials.json file in the directory with the following structure:
-{"api_key": "your_api_key", "api_secret": "your_api_secret"}
-Make sure you have given the correct permission to your api!
-2.) Edit the parameters below.
+Readme:
+https://github.com/slazarov/python-bittrex-autosell
 """
 
-LOG = 'autosell.log'
-CREDENTIALS = 'credentials.json'
+
+def open_credentials(credentials_file):
+    try:
+        with open(credentials_file, 'r') as file:
+            credentials = load(file)
+        return credentials
+    except FileNotFoundError:
+        print(CREDENTIALS_FILE_NOT_FOUND)
+        exit(0)
 
 
-def open_credentials():
-    with open(CREDENTIALS, 'r') as file:
-        credentials = load(file)
-    return credentials
-
-
-def create_client():
-    credentials = open_credentials()
+def create_client(api_keys):
+    credentials = open_credentials(api_keys)
     c = bittrex.Bittrex(api_key=credentials['api_key'],
                         api_secret=credentials['api_secret'],
                         api_version=bittrex.API_V1_1)
@@ -52,43 +36,33 @@ def create_client():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--coins', help='Specify three coins, separated by commas with no space in between. '
-                                              'First coin -> trade for Second -> trade for Third', type=str, metavar='')
-    parser.add_argument('-p', '--price', metavar='',
-                        help='Specify price difference in percentage relative '
-                             'to top order in the order book. '
-                             'I.e if the top SELL order is 100EUR and -p '
-                             'is 0.02, you will place an order for 102EUR. '
-                             'For BUY orders, you will place an order for 98EUR. '
-                             'Leave empty, if you want to take the top order (default: 0)',
-                        default=0, type=float)
-    parser.add_argument('-t', '--time', help='Sleep interval in seconds between re-running the script (default: 3600)',
-                        default=3600, metavar='',
-                        type=float)
-    parser.add_argument('-f', '--fee',
-                        help='Bittrex trade fee, don\'t touch unless Bittrex '
-                             'has changed it and it is not reflected in the script (default: 0.0025)',
-                        default=0.0025, type=float, metavar='')
-    parser.add_argument('-l', '--log', action='store_true')
+    parser.add_argument('-c', '--coins', help=MSG_COINS, type=str, metavar='')
+    parser.add_argument('-p', '--price', help=MSG_PRICE, default=0, type=float, metavar='')
+    parser.add_argument('-t', '--time', help=MSG_TIME, default=3600, type=float, metavar='')
+    parser.add_argument('-f', '--fee', help=MSG_FEE, default=0.0025, type=float, metavar='')
+    parser.add_argument('-l', '--log', help=MSG_LOG, default=False, type=str, nargs='?', const='autosell.log',
+                        metavar='')
+    parser.add_argument('-a', '--api', help=MSG_API, default='credentials.json', type=str, metavar='')
     args = parser.parse_args()
 
     if args.coins is not None:
         coins = str.split(args.coins, ',')
         if len(coins) != 3:
-            print('Incorrect number of coins. You must specify 3 comma separated coins.')
+            print(ERROR_COIN_NUMBER)
             exit(0)
         else:
             for i in range(len(coins)):
                 coins[i] = str.upper(coins[i])
     else:
-        print('You did not specify the coins correctly. Check the readme.')
+        print(ERROR_COIN_FORMAT)
         exit(0)
 
-    bittrex_client = create_client()
+    bittrex_client = create_client(args.api)
+    exit(0)
 
     # Cancel previous orders
     while True:
-        msg = 'Getting open orders.'
+        msg = INFO_GETTING_ORDERS
         if args.log is True:
             msgs = [msg]
         print(msg)
@@ -102,7 +76,7 @@ def main():
         if open_orders is not None:
             for order in open_orders:
                 cancel = bittrex_client.cancel(order['OrderUuid'])
-                msg = 'Canceling order for {} for {}@{}.'.format(order['Exchange'], order['Quantity'], order['Limit'])
+                msg = INFO_CANCELLING_ORDERS.format(order['Exchange'], order['Quantity'], order['Limit'])
                 print(msg)
                 if args.log is True:
                     msgs.append(msg)
@@ -130,7 +104,8 @@ def main():
             # Don't sell @ market price, set a price at 3% higher and hope it will move into your favour
             price = orderbook[0]['Rate'] * (1 + args.price)
             trade = bittrex_client.sell_limit(ticker, qty, price)
-            msg = "Sell order for " + ticker + " for " + str(qty) + "@" + str(price)
+            # msg = "Sell order for " + ticker + " for " + str(qty) + "@" + str(price)
+            msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
             if args.log is True:
                 msgs.append(msg)
             print(msg)
@@ -142,7 +117,8 @@ def main():
                 orderbook = bittrex_client.get_orderbook(ticker, bittrex.SELL_ORDERBOOK)['result']
                 price = orderbook[0]['Rate'] * (1 + args.price)
                 trade = bittrex_client.sell_limit(ticker, qty, price)
-                msg = "Sell order for " + ticker + " for " + str(qty) + "@" + str(price)
+                # msg = "Sell order for " + ticker + " for " + str(qty) + "@" + str(price)
+                msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
                 if args.log is True:
                     msgs.append(msg)
                 print(msg)
@@ -153,16 +129,18 @@ def main():
                 price = orderbook[0]['Rate'] * (1 - args.price)
                 qty = round((coin_1['Balance'] / price) * (1 - args.fee), 8)
                 trade = bittrex_client.buy_limit(ticker, qty, price)
-                msg = "Buy order for " + ticker + " for " + str(qty) + "@" + str(price)
+                # msg = "Buy order for " + ticker + " for " + str(qty) + "@" + str(price)
+                msg = INFO_PLACED_BUY_ORDER.format(ticker, qty, price)
                 if args.log is True:
                     msgs.append(msg)
                 print(msg)
 
-        msg = "Sleep for " + str(args.time / 3600) + " hours..."
+        # msg = "Sleep for " + str(args.time / 3600) + " hours..."
+        msg = INFO_SLEEP.format(args.time / 3600)
         if args.log is True:
             msgs.append(msg)
         if args.log is True:
-            with open(LOG, 'a') as log:
+            with open(args.log, 'a') as log:
                 for msg in msgs:
                     log.write('{} \n'.format(msg))
         print(msg)
