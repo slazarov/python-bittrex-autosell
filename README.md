@@ -4,6 +4,18 @@ Python CLI tool to auto sell coins on Bittrex.
 It is used in the cases when you want to auto sell a specific coin for
 another, but there is no direct market, so you have to use an intermediate market.
 
+### Disclaimer
+
+*I am not associated with Bittrex. Use the library at your own risk, I don't bear any responsibility if you end up losing your money.*
+
+*The code is licensed under the MIT license. Please consider the following message:*
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
+
 # Why use it?:
 The tool is mostly geared to miners who are mining a given coin but
 want to hold another one.
