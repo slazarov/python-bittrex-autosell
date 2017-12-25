@@ -107,6 +107,5 @@ venv.bak/
 .idea/
 python-bittrex-autosell/autosell.log
 python-bittrex-autosell.idea/
-Dockerfile
 
 # End of https://www.gitignore.io/api/python
