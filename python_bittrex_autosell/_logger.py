@@ -18,6 +18,15 @@ def add_stream_logger(level=logging.DEBUG, file_name=None):
     logger.addHandler(_get_stream_handler())
 
 
+def add_stream_logger_debug(level=logging.DEBUG, file_name=None):
+    logger = logging.getLogger('pba')
+    logger.setLevel(level)
+    if file_name is not None:
+        logger.addHandler(_get_file_handler(file_name))
+    logger.addHandler(_get_stream_handler())
+    return logger
+
+
 def remove_stream_logger():
     logger = logging.getLogger(__package__)
     logger.propagate = False

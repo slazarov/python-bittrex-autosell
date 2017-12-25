@@ -40,7 +40,9 @@ ERROR_COIN_FORMAT = 'You did not specify the coins correctly. E.g --coins ZEN,BT
 # =============
 
 INFO_GETTING_ORDERS = 'Getting open orders.'
-INFO_CANCELLING_ORDERS = 'Canceling order for {} for {}@{}.'
-INFO_PLACED_SELL_ORDER = 'Sell order for {} for {}@{}'
-INFO_PLACED_BUY_ORDER = 'Buy order for {} for {}@{}'
-INFO_SLEEP='Sleep for {} hours.'
+INFO_CANCELLING_ORDERS = 'Canceling order for {} for {}@{} with ID: {}.'
+INFO_ORDER_CANCEL_STATUS = 'Order {} cancellation success status: {}.'
+INFO_ORDERS_NONE='No open orders found.'
+INFO_PLACED_SELL_ORDER = 'Sell order for {} for {}@{}.'
+INFO_PLACED_BUY_ORDER = 'Buy order for {} for {}@{}.'
+INFO_SLEEP = 'Sleep for {} hours.'

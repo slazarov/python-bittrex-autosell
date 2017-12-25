@@ -1,6 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""
+Readme:
+https://github.com/slazarov/python-bittrex-autosell
+"""
+
 # main.py
 from __future__ import print_function
 import bittrex
@@ -8,16 +13,21 @@ import argparse
 from json import load
 from time import sleep
 from sys import exit
-from ._constants import *
-import logging
-from ._logger import add_stream_logger
 
-logger = logging.getLogger(__name__)
+# Use try statements for debugging, otherwise you get ModuleNotFoundError
+try:
+    from ._constants import *
+except ImportError:
+    from python_bittrex_autosell._constants import *
 
-"""
-Readme:
-https://github.com/slazarov/python-bittrex-autosell
-"""
+try:
+    from ._logger import *
+
+    logger = logging.getLogger(__name__)
+except ImportError:
+    from python_bittrex_autosell._logger import *
+
+    logger = add_stream_logger_debug()
 
 
 def open_credentials(credentials_file):
@@ -63,15 +73,13 @@ def main():
 
     bittrex_client = create_client(args.api)
     add_stream_logger()
-    logger.info('hi')
-    exit(0)
 
     # Cancel previous orders
     while True:
         msg = INFO_GETTING_ORDERS
         if args.log is True:
             msgs = [msg]
-        print(msg)
+        logger.info(msg)
         open_orders = []
         for _ in range(5):
             open_orders = bittrex_client.get_open_orders()['result']
@@ -79,13 +87,22 @@ def main():
                 sleep(1)
             else:
                 break
-        if open_orders is not None:
+        if open_orders is not None and open_orders:
             for order in open_orders:
-                cancel = bittrex_client.cancel(order['OrderUuid'])
-                msg = INFO_CANCELLING_ORDERS.format(order['Exchange'], order['Quantity'], order['Limit'])
-                print(msg)
+                order_id = order['OrderUuid']
+                cancel = bittrex_client.cancel(order_id)
+                msg = INFO_CANCELLING_ORDERS.format(order['Exchange'], order['Quantity'], order['Limit'], order_id)
+                logger.info(msg)
+                msg_order_cancel = INFO_ORDER_CANCEL_STATUS.format(order_id, cancel['success'])
+                logger.info(msg_order_cancel)
                 if args.log is True:
                     msgs.append(msg)
+                    msgs.append(msg_order_cancel)
+        else:
+            msg = INFO_ORDERS_NONE
+            logger.info(msg)
+            if args.log is True:
+                msgs.append(msg)
 
         sleep(5)
         balance = bittrex_client.get_balances()
@@ -110,11 +127,10 @@ def main():
             # Don't sell @ market price, set a price at 3% higher and hope it will move into your favour
             price = orderbook[0]['Rate'] * (1 + args.price)
             trade = bittrex_client.sell_limit(ticker, qty, price)
-            # msg = "Sell order for " + ticker + " for " + str(qty) + "@" + str(price)
             msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
             if args.log is True:
                 msgs.append(msg)
-            print(msg)
+            logger.info(msg)
 
         if coin_2['Currency'] == 'USDT':
             if coin_1['Balance'] > 0 and coin_1['Pending'] == 0:
@@ -123,11 +139,10 @@ def main():
                 orderbook = bittrex_client.get_orderbook(ticker, bittrex.SELL_ORDERBOOK)['result']
                 price = orderbook[0]['Rate'] * (1 + args.price)
                 trade = bittrex_client.sell_limit(ticker, qty, price)
-                # msg = "Sell order for " + ticker + " for " + str(qty) + "@" + str(price)
                 msg = INFO_PLACED_SELL_ORDER.format(ticker, qty, price)
                 if args.log is True:
                     msgs.append(msg)
-                print(msg)
+                logger.info(msg)
         else:
             if coin_1['Balance'] > 0 and coin_1['Pending'] == 0:
                 ticker = coins[1] + '-' + coins[2]
@@ -135,13 +150,11 @@ def main():
                 price = orderbook[0]['Rate'] * (1 - args.price)
                 qty = round((coin_1['Balance'] / price) * (1 - args.fee), 8)
                 trade = bittrex_client.buy_limit(ticker, qty, price)
-                # msg = "Buy order for " + ticker + " for " + str(qty) + "@" + str(price)
                 msg = INFO_PLACED_BUY_ORDER.format(ticker, qty, price)
                 if args.log is True:
                     msgs.append(msg)
-                print(msg)
+                logger.info(msg)
 
-        # msg = "Sleep for " + str(args.time / 3600) + " hours..."
         msg = INFO_SLEEP.format(args.time / 3600)
         if args.log is True:
             msgs.append(msg)
@@ -149,7 +162,7 @@ def main():
             with open(args.log, 'a') as log:
                 for msg in msgs:
                     log.write('{} \n'.format(msg))
-        print(msg)
+        logger.info(msg)
         sleep(args.time)
 
 
