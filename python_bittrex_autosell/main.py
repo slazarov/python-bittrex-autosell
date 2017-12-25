@@ -10,7 +10,7 @@ from time import sleep
 from sys import exit
 from python_bittrex_autosell.constants import *
 import logging
-from python_bittrex_autosell._logger import add_stream_logger
+from ._logger import add_stream_logger
 
 logger = logging.getLogger(__name__)
 
