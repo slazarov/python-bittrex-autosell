@@ -22,12 +22,8 @@ except ImportError:
 
 try:
     from ._logger import *
-
-    #logger = logging.getLogger(__name__)
 except ImportError:
     from python_bittrex_autosell._logger import *
-
-    #logger = add_stream_logger_debug()
 
 
 def open_credentials(credentials_file):
@@ -59,8 +55,8 @@ def main():
     parser.add_argument('-a', '--api', help=MSG_API, default='credentials.json', type=str, metavar='')
     args = parser.parse_args()
 
-
-    logger=add_stream_logger2(__name__)
+    logger = add_stream_logger()
+    logger.info(2)
     # if args.log is not False:
     #     logger = add_file_handler(logger_name, args.log)
 
@@ -78,7 +74,6 @@ def main():
 
     exit(0)
     bittrex_client = create_client(args.api)
-    add_stream_logger()
 
     # Cancel previous orders
     while True:
