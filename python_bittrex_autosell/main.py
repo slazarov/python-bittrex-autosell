@@ -58,7 +58,7 @@ def get_coins(coin_list):
         exit(0)
 
 
-def cancel_existing_orders():
+def cancel_existing_orders(coins):
     logger.info(INFO_GETTING_ORDERS)
     open_orders = []
     for _ in range(5):
@@ -69,11 +69,14 @@ def cancel_existing_orders():
             break
     if open_orders is not None and open_orders:
         for order in open_orders:
-            order_id = order['OrderUuid']
-            cancel = bittrex_client.cancel(order_id)
-            logger.info(
-                INFO_CANCELLING_ORDERS.format(order['Exchange'], order['Quantity'], order['Limit'], order_id))
-            logger.info(INFO_ORDER_CANCEL_STATUS.format(order_id, cancel['success']))
+            for i in range(len(coins)):
+                if coins[i] in order['Exchange'] and coins[i + 1] in order['Exchange']:
+                    order_id = order['OrderUuid']
+                    cancel = bittrex_client.cancel(order_id)
+                    logger.info(
+                        INFO_CANCELLING_ORDERS.format(order['Exchange'], order['Quantity'], order['Limit'], order_id))
+                    logger.info(INFO_ORDER_CANCEL_STATUS.format(order_id, cancel['success']))
+                    break
     else:
         logger.info(INFO_ORDERS_NONE)
 
@@ -122,7 +125,7 @@ def main():
     bittrex_client = create_client(args.api)
 
     while True:
-        cancel_existing_orders()
+        cancel_existing_orders(coins)
         balances = get_and_sort_balances(coins)
         coin_0 = balances[coins[0]]
         coin_1 = balances[coins[1]]
