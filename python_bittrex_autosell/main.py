@@ -119,9 +119,9 @@ def main():
     parser.add_argument('-a', '--api', help=MSG_API, default='credentials.json', type=str, metavar='')
     args = parser.parse_args()
 
-    coins = get_coins(args.coins)
     global logger, bittrex_client
     logger = add_stream_logger(file_name=args.log)
+    coins = get_coins(args.coins)
     bittrex_client = create_client(args.api)
 
     while True:
